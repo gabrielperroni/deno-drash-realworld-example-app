@@ -18,13 +18,7 @@ steps:
     azureContainerRegistry: '{"loginServer":"toptalacr.azurecr.io", "id" : "/subscriptions/dba061f0-9c07-4602-a54c-f8edb1c7e848/resourceGroups/toptal-rg/providers/Microsoft.ContainerRegistry/registries/toptalacr"}'
     dockerComposeFile: '**/docker-compose.yml'
     action: 'Run a Docker Compose command'
-    dockerComposeCommand: 'build'
-- task: DockerCompose@0
-  displayName: Push services
-  inputs:
-    action: Push services
-    containerregistrytype: 'Azure Container Registry'
-    azureSubscription: 'Main-GP-Pay-As-You-Go(dba061f0-9c07-4602-a54c-f8edb1c7e848)'
-    azureContainerRegistry: '{"loginServer":"toptalacr.azurecr.io", "id" : "/subscriptions/dba061f0-9c07-4602-a54c-f8edb1c7e848/resourceGroups/toptal-rg/providers/Microsoft.ContainerRegistry/registries/toptalacr"}'
-    dockerComposeFile: docker-compose.yml
-    dockerComposeCommand: 'push'
+    dockerComposeCommand: 'buildAndPush'
+
+- upload: manifests
+  artifact: manifests
