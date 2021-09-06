@@ -1,0 +1,19 @@
+apiVersion : apps/v1
+kind: Deployment
+metadata:
+  name: gabrielperronidenodrashrealworldexampleapp 
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gabrielperronidenodrashrealworldexampleapp
+  template:
+    metadata:
+      labels:
+        app: gabrielperronidenodrashrealworldexampleapp 
+    spec:
+      containers:
+        - name: gabrielperronidenodrashrealworldexampleapp 
+          image: toptalacr.azurecr.io/gabrielperronidenodrashrealworldexampleapp
+          ports:
+          - containerPort: 80
