@@ -58,7 +58,7 @@ stages:
     displayName: Deploy
     pool:
       vmImage: $(vmImageName)
-    environment: 'gabrielperronidenodrashrealworldexampleapp_drash.toptal-full'
+    environment: 'gabrielperroniaspnetcorerealworldexampleapp.toptal-be'
     strategy:
       runOnce:
         deploy:
