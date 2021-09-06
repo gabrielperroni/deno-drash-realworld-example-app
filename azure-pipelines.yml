@@ -14,7 +14,7 @@ steps:
     azureContainerRegistry: '{"loginServer":"toptalacr.azurecr.io", "id" : "/subscriptions/dba061f0-9c07-4602-a54c-f8edb1c7e848/resourceGroups/toptal-rg/providers/Microsoft.ContainerRegistry/registries/toptalacr"}'
     dockerComposeFile: '**/docker-compose.yml'
     action: 'Run a Docker Compose command'
-    dockerComposeCommand: 'docker-compose build'
+    dockerComposeCommand: 'build'
 # Start with a minimal pipeline that you can customize to build and deploy your code.
 # Add steps that build, run tests, deploy, and more:
 # https://aka.ms/yaml
