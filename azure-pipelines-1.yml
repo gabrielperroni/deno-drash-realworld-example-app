@@ -1,34 +1,84 @@
-# Starter pipeline
-
-# Start with a minimal pipeline that you can customize to build and deploy your code.
-# Add steps that build, run tests, deploy, and more:
-# https://aka.ms/yaml
+# Deploy to Azure Kubernetes Service
+# Build and push image to Azure Container Registry; Deploy to Azure Kubernetes Service
+# https://docs.microsoft.com/azure/devops/pipelines/languages/docker
 
 trigger:
 - master
 
-pool:
-  vmImage: ubuntu-latest
+resources:
+- repo: self
 
-steps:
-- task: DockerCompose@0
-  inputs:
-    containerregistrytype: 'Azure Container Registry'
-    azureSubscription: 'Main-GP-Pay-As-You-Go(dba061f0-9c07-4602-a54c-f8edb1c7e848)'
-    azureContainerRegistry: '{"loginServer":"toptalacr.azurecr.io", "id" : "/subscriptions/dba061f0-9c07-4602-a54c-f8edb1c7e848/resourceGroups/toptal-rg/providers/Microsoft.ContainerRegistry/registries/toptalacr"}'
-    dockerComposeFile: '**/docker-compose.yml'
-    action: 'Run a Docker Compose command'
-    dockerComposeCommand: 'build'
+variables:
 
-- task: DockerCompose@0
-  displayName: Push services
-  inputs:
-    action: Push services
-    containerregistrytype: 'Azure Container Registry'
-    azureSubscription: 'Main-GP-Pay-As-You-Go(dba061f0-9c07-4602-a54c-f8edb1c7e848)'
-    azureContainerRegistry: '{"loginServer":"toptalacr.azurecr.io", "id" : "/subscriptions/dba061f0-9c07-4602-a54c-f8edb1c7e848/resourceGroups/toptal-rg/providers/Microsoft.ContainerRegistry/registries/toptalacr"}'
-    dockerComposeFile: docker-compose.yml
-    dockerComposeCommand: 'push'
+  # Container registry service connection established during pipeline creation
+  dockerRegistryServiceConnection: '6cddfe1a-aa2d-46a5-b2e5-93c487a080c4'
+  imageRepository: 'gabrielperronidenodrashrealworldexampleapp_drash'
+  containerRegistry: 'toptalacr.azurecr.io'
+  tag: '$(Build.BuildId)'
+  imagePullSecret: 'toptalacr16757bdf-auth'
 
-- upload: manifests
-  artifact: manifests
+  # Agent VM image name
+  vmImageName: 'ubuntu-latest'
+
+
+stages:
+- stage: Build
+  displayName: Build stage
+  jobs:
+  - job: Build
+    displayName: Build
+    pool:
+      vmImage: $(vmImageName)
+    steps:
+      - task: DockerCompose@0
+        inputs:
+          containerregistrytype: 'Azure Container Registry'
+          azureSubscription: 'Main-GP-Pay-As-You-Go(dba061f0-9c07-4602-a54c-f8edb1c7e848)'
+          azureContainerRegistry: '{"loginServer":"toptalacr.azurecr.io", "id" : "/subscriptions/dba061f0-9c07-4602-a54c-f8edb1c7e848/resourceGroups/toptal-rg/providers/Microsoft.ContainerRegistry/registries/toptalacr"}'
+          dockerComposeFile: '**/docker-compose.yml'
+          action: 'Run a Docker Compose command'
+          dockerComposeCommand: 'build'
+
+      - task: DockerCompose@0
+        displayName: Push services
+        inputs:
+          action: Push services
+          containerregistrytype: 'Azure Container Registry'
+          azureSubscription: 'Main-GP-Pay-As-You-Go(dba061f0-9c07-4602-a54c-f8edb1c7e848)'
+          azureContainerRegistry: '{"loginServer":"toptalacr.azurecr.io", "id" : "/subscriptions/dba061f0-9c07-4602-a54c-f8edb1c7e848/resourceGroups/toptal-rg/providers/Microsoft.ContainerRegistry/registries/toptalacr"}'
+          dockerComposeFile: docker-compose.yml
+          dockerComposeCommand: 'push'
+
+- stage: Deploy
+  displayName: Deploy stage
+  dependsOn: Build
+
+  jobs:
+  - deployment: Deploy
+    displayName: Deploy
+    pool:
+      vmImage: $(vmImageName)
+    environment: 'gabrielperronidenodrashrealworldexampleapp_drash.toptal-full'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - task: KubernetesManifest@0
+            displayName: Create imagePullSecret
+            inputs:
+              action: createSecret
+              secretName: $(imagePullSecret)
+              dockerRegistryEndpoint: $(dockerRegistryServiceConnection)
+
+          - task: KubernetesManifest@0
+            displayName: Deploy to Kubernetes cluster
+            inputs:
+              action: deploy
+              manifests: |
+                $(Pipeline.Workspace)/manifests/deployment.yml
+                $(Pipeline.Workspace)/manifests/service.yml
+              imagePullSecrets: |
+                $(imagePullSecret)
+              containers: |
+                $(containerRegistry)/$(imageRepository):$(tag)
+
