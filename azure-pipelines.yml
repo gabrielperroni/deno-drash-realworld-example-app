@@ -32,6 +32,4 @@ stages:
           azureSubscription: 'Main-GP-Pay-As-You-Go(dba061f0-9c07-4602-a54c-f8edb1c7e848)'
           azureContainerRegistry: '{"loginServer":"toptalacr.azurecr.io", "id" : "/subscriptions/dba061f0-9c07-4602-a54c-f8edb1c7e848/resourceGroups/toptal-rg/providers/Microsoft.ContainerRegistry/registries/toptalacr"}'
           dockerComposeFile: docker-compose.yml
-          projectName: $(Build.Repository.Name)
-          qualifyImageNames: true
-          additionalImageTags: $(Build.BuildId)
+          dockerComposeCommand: 'push'
