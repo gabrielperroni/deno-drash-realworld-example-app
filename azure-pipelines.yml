@@ -13,7 +13,7 @@ stages:
   - job: Build
     displayName: Build
     pool:
-      vmImage: $(vmImageName)
+      vmImage: ubuntu-latest
     steps:
       - task: DockerCompose@0
         inputs:
@@ -23,7 +23,15 @@ stages:
           dockerComposeFile: '**/docker-compose.yml'
           action: 'Run a Docker Compose command'
           dockerComposeCommand: 'build'
-      
+
+- stage: Push
+  displayName: Push stage
+  jobs:
+  - job: Push
+    displayName: Push
+    pool:
+      vmImage: ubuntu-latest
+    steps:
       - task: DockerCompose@0
         displayName: Push services
         inputs:
